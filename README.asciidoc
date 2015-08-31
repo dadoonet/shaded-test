@@ -1,0 +1,69 @@
+= Demo project for shaded elasticsearch and shield
+
+This project shows how to create an embedded version of shield and elasticsearch
+with package relocation to avoid some conflicts with your existing project libs.
+
+
+== Install the demo
+
+First download elasticsearch 2.0.0-beta1, install it, install shield and license plugins.
+
+----------------
+wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.0.0-beta1/elasticsearch-2.0.0-beta1.tar.gz
+tar xzv elasticsearch-2.0.0-beta1.tar.gz
+cd elasticsearch-2.0.0-beta1
+bin/plugin install license
+bin/plugin install shield
+bin/shield/esusers useradd dadoonet -p azerty -r admin
+bin/elasticsearch
+----------------
+
+Check that everything is fine:
+
+----------------
+# should fail
+curl localhost:9200
+# should work
+curl localhost:9200?pretty -u dadoonet:azerty
+----------------
+
+== Fork this project
+
+This project has 3 modules:
+
+* parent project `shaded-test`
+* `es-shaded`: the goal is to shade here whatever library you want and relocate potentially any library
+which conflicts with your own project. For example, here we shaded JODA 2.8
+* `es-test`: the final project you want to build. This one depends on `es-shaded` and on the libraries you need for
+your project. For example, here we added JODA 2.1.
+
+Run:
+
+-------------------
+mvn clean install
+-------------------
+
+You should see:
+
+-------------------------------------------------------
+Running fr.pilato.test.test.NodeTest
+août 31, 2015 3:59:43 PM org.elasticsearch.plugins.PluginsService <init>
+INFOS: [Hybrid] loaded [shield], sites []
+août 31, 2015 3:59:43 PM org.elasticsearch.transport.TransportModule configure
+INFOS: [Hybrid] Using [org.elasticsearch.shield.transport.ShieldClientTransportService] as transport service, overridden by [shield]
+août 31, 2015 3:59:43 PM org.elasticsearch.transport.TransportModule configure
+INFOS: [Hybrid] Using [org.elasticsearch.shield.transport.netty.ShieldNettyTransport] as transport, overridden by [shield]
+getClusterName = elasticsearch
+codeSource = (file:/Users/dpilato/.m2/repository/joda-time/joda-time/2.1/joda-time-2.1.jar <no signer certificates>)
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.154 sec
+
+Results :
+
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+-------------------------------------------------------
+
+Important parts to check:
+
+* `getClusterName = elasticsearch`
+* `codeSource = (file:/path/to/joda-time-2.1.jar)`
+
