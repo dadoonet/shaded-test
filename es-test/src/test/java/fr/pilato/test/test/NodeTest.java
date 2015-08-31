@@ -20,6 +20,7 @@
 package fr.pilato.test.test;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -47,5 +48,9 @@ public class NodeTest {
 
         CodeSource codeSource = new DateTime().getClass().getProtectionDomain().getCodeSource();
         System.out.println("codeSource = " + codeSource);
+
+        client.prepareIndex("test", "doc", "1").setSource("foo", "bar").setRefresh(true).get();
+        SearchResponse searchResponse = client.prepareSearch("test").get();
+        System.out.println("totalHits = " + searchResponse.getHits().getTotalHits());
     }
 }

@@ -55,6 +55,7 @@ août 31, 2015 3:59:43 PM org.elasticsearch.transport.TransportModule configure
 INFOS: [Hybrid] Using [org.elasticsearch.shield.transport.netty.ShieldNettyTransport] as transport, overridden by [shield]
 getClusterName = elasticsearch
 codeSource = (file:/Users/dpilato/.m2/repository/joda-time/joda-time/2.1/joda-time-2.1.jar <no signer certificates>)
+totalHits = 1
 Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.154 sec
 
 Results :
@@ -66,4 +67,4 @@ Important parts to check:
 
 * `getClusterName = elasticsearch`
 * `codeSource = (file:/path/to/joda-time-2.1.jar)`
-
+* `totalHits = 1`
