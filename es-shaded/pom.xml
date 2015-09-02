@@ -11,22 +11,20 @@
 
     <artifactId>es-shaded</artifactId>
 
+    <properties>
+        <elasticsearch.version>2.0.0-beta1</elasticsearch.version>
+    </properties>
+
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>2.0.0-beta1</version>
+            <version>${elasticsearch.version}</version>
         </dependency>
         <dependency>
             <groupId>org.elasticsearch.plugin</groupId>
             <artifactId>shield</artifactId>
-            <version>2.0.0-beta1</version>
+            <version>${elasticsearch.version}</version>
         </dependency>
     </dependencies>
 
@@ -43,24 +41,22 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
                             <relocations>
                                 <relocation>
                                     <pattern>org.joda</pattern>
-                                    <shadedPattern>fr.pilato.3rdparty.joda</shadedPattern>
+                                    <shadedPattern>fr.pilato.thirdparty.joda</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google.guava</pattern>
-                                    <shadedPattern>fr.pilato.3rdparty.guava</shadedPattern>
+                                    <shadedPattern>fr.pilato.thirdparty.guava</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google.common</pattern>
-                                    <shadedPattern>fr.pilato.3rdparty.common</shadedPattern>
+                                    <shadedPattern>fr.pilato.thirdparty.common</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google.thirdparty</pattern>
-                                    <shadedPattern>fr.pilato.3rdparty.thirdparty</shadedPattern>
+                                    <shadedPattern>fr.pilato.thirdparty.thirdparty</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>

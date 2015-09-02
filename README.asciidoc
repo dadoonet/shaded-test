@@ -8,6 +8,7 @@ with package relocation to avoid some conflicts with your existing project libs.
 
 First download elasticsearch 2.0.0-beta1, install it, install shield and license plugins.
 
+[source,shell]
 ----------------
 wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.0.0-beta1/elasticsearch-2.0.0-beta1.tar.gz
 tar xzv elasticsearch-2.0.0-beta1.tar.gz
@@ -20,6 +21,7 @@ bin/elasticsearch
 
 Check that everything is fine:
 
+[source,shell]
 ----------------
 # should fail
 curl localhost:9200
@@ -39,32 +41,58 @@ your project. For example, here we added JODA 2.1.
 
 Run:
 
+[source,shell]
 -------------------
 mvn clean install
 -------------------
 
 You should see:
 
+[source,shell]
 -------------------------------------------------------
-Running fr.pilato.test.test.NodeTest
-août 31, 2015 3:59:43 PM org.elasticsearch.plugins.PluginsService <init>
-INFOS: [Hybrid] loaded [shield], sites []
-août 31, 2015 3:59:43 PM org.elasticsearch.transport.TransportModule configure
-INFOS: [Hybrid] Using [org.elasticsearch.shield.transport.ShieldClientTransportService] as transport service, overridden by [shield]
-août 31, 2015 3:59:43 PM org.elasticsearch.transport.TransportModule configure
-INFOS: [Hybrid] Using [org.elasticsearch.shield.transport.netty.ShieldNettyTransport] as transport, overridden by [shield]
-getClusterName = elasticsearch
-codeSource = (file:/Users/dpilato/.m2/repository/joda-time/joda-time/2.1/joda-time-2.1.jar <no signer certificates>)
-totalHits = 1
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.154 sec
-
-Results :
-
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
 -------------------------------------------------------
 
-Important parts to check:
+It means that test were executed correctly.
 
-* `getClusterName = elasticsearch`
-* `codeSource = (file:/path/to/joda-time-2.1.jar)`
-* `totalHits = 1`
+Tests are basically:
+
+* `testJodaLibVersion()`
+
+[source,java]
+-------------------------------------------------------
+CodeSource codeSource = new org.joda.time.DateTime().getClass().getProtectionDomain().getCodeSource();
+assertThat(codeSource.getLocation().getFile(), containsString("joda-time-2.1.jar"));
+
+codeSource = new fr.pilato.thirdparty.joda.time.DateTime().getClass().getProtectionDomain().getCodeSource();
+assertThat(codeSource.getLocation().getFile(), containsString("es-shaded-1.0-SNAPSHOT.jar"));
+-------------------------------------------------------
+
+* `testShadedClient()`
+
+[source,java]
+-------------------------------------------------------
+TransportClient client = TransportClient.builder()
+        .settings(Settings.builder()
+                        .put("path.home", ".")
+                        .put("shield.user", "dadoonet:azerty")
+                        .put("plugin.types", "org.elasticsearch.shield.ShieldPlugin")
+
+        )
+        .build();
+client.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("localhost", 9300)));
+ClusterHealthResponse health = client.admin().cluster().prepareHealth().setWaitForYellowStatus().get();
+assertThat(health.getClusterName(), is("elasticsearch"));
+
+try {
+    client.admin().indices().prepareDelete("test").get();
+} catch (IndexNotFoundException e) {
+    // That's fine
+}
+
+client.prepareIndex("test", "doc", "1").setSource("foo", "bar").setRefresh(true).get();
+SearchResponse searchResponse = client.prepareSearch("test").get();
+assertThat(searchResponse.getHits().getTotalHits(), is(1L));
+-------------------------------------------------------
